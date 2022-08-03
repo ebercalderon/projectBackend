@@ -1,13 +1,13 @@
-<h1 align ="center" > Project Analytics </h1>
+<h1 align ="center" > Project Backend </h1>
 
-<h4 align ="center"> Analytical part of the web system project </h4>
+<h4 align ="center"> Backend part of the web system project </h4>
 
 <br/>
 <p align="center">
-    <a href="https://github.com/ebercalderon/projectBackend">
-      <img src="https://img.shields.io/badge/project-Backend-blue" /></a> &#xa0;
     <a href="https://github.com/ebercalderon/projectFrontend">
-      <img src="https://img.shields.io/badge/project-Frontend-blue" /></a> &#xa0;     
+      <img src="https://img.shields.io/badge/project-Frontend-blue" /></a> &#xa0; 
+    <a href="https://github.com/ebercalderon/projectAnalytics">
+      <img src="https://img.shields.io/badge/project-Analytics-blueviolet" /></a> &#xa0;
     <a href="https://github.com/ebercalderon/projectGateway">
       <img src="https://img.shields.io/badge/project-Gateway-blueviolet" /></a>
 </p>
@@ -32,7 +32,8 @@ In order to run this project locally, simply fork and clone the repository or do
 In the terminal to start
 
 ```cmd
-$ go version
+$ node --version
+$ npm install 
 ```
 
 Config.env
@@ -43,13 +44,17 @@ Config.env
 ```
 #  ---  example  ---
 
-ERPGATEWAY_URL=http://localhost:XXXX/
+PORT=0000 # Server port number
+MONGO_URI=mongodb://xxx.xxx.x.xxx:xxxxx/
+DATABASE_NAME="databasename" # Simple string
+JWT_SECRET="jwt_super_secret"
+JWT_HOURS_DURATION=9999 # Simple integer
 ```
 
 Deploy and run
 
 ```bash
-$ go run main.go
+$ node src/server.js
 ```
 
 
