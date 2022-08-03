@@ -1,0 +1,14 @@
+{
+    "compilerOptions": {
+        "module": "commonjs",
+        "esModuleInterop": true,
+        "strict": true,
+        "noImplicitAny": true,
+        "removeComments": true,
+        "preserveConstEnums": true,
+        "skipLibCheck": true,
+        "target": "ES6",
+        "watch": true,
+        "lib": ["DOM", "ES2021"]
+    }
+}
