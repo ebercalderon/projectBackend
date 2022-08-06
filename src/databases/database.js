@@ -38,7 +38,7 @@ dotenv.config();
 const dbInformation = {
     mongo: mongoose,
     url: process.env.MONGO_URI === "" ? "mongodb://localhost:27017/" : process.env.MONGO_URI,
-    dbName: process.env.DATABASE_NAME == "" ? "erp_db" : process.env.DATABASE_NAME,
+    dbName: process.env.DATABASE_NAME == "" ? "project_db" : process.env.DATABASE_NAME,
 };
 class Database {
     constructor() {
