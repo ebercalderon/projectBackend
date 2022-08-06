@@ -4,7 +4,8 @@
   "description": "Backend of ERPSolution application",
   "main": "index.js",
   "scripts": {
-    "test": "test"
+    "start": "node src/server.js",
+    "test": "test"    
   },
   "repository": {
     "type": "git",
