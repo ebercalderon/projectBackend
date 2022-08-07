@@ -30,7 +30,7 @@ dotenv.config();
 const dbInformation: any = {
 	mongo: mongoose,
 	url: process.env.MONGO_URI === "" ? "mongodb://localhost:27017/" : process.env.MONGO_URI,
-	dbName: process.env.DATABASE_NAME == "" ? "project_db" : process.env.DATABASE_NAME,
+	dbName: process.env.DATABASE_NAME == "" ? "test" : process.env.DATABASE_NAME,
 };
 export class Database {
 	private static instance: Database;
@@ -59,7 +59,7 @@ export class Database {
 		this.MermaDBController = new MermaDBController(new Merma().Model);
 		this.ProveedorDBController = new ProveedorDBController(new Proveedor().Model);
 
-		this.db.connect(dbInformation.url + dbInformation.dbName).then(() => {
+		this.db.connect(dbInformation.url).then(() => {
 			console.log("¡Conexión realizada con la base de datos!");
 		}).catch((err: ErrorRequestHandler) => {
 			console.log("¡No se pudo realizar la conexión con la base de datos!", err);
