@@ -1,8 +1,0 @@
-# The file must be called ".env" without the cotation marks
-################## IMPORTANT: NEVER UPLOAD YOUR KEYS TO GITHUB ############################
-
-PORT=0000 # Server port number
-MONGO_URI=mongodb://xxx.xxx.x.xxx:xxxxx/
-DATABASE_NAME="databasename" # Simple string
-JWT_SECRET="jwt_super_secret"
-JWT_HOURS_DURATION=9999 # Simple integer
