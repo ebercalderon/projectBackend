@@ -36,6 +36,7 @@ class Venta {
         }, { strict: true, timestamps: false });
         const VentaSchema = new mongoose_1.Schema({
             productos: { type: [ProductoVendidoSchema], required: true },
+            numFactura: { type: String, required: true },
             dineroEntregadoEfectivo: { type: Number, required: true },
             dineroEntregadoTarjeta: { type: Number, required: true },
             precioVentaTotalSinDto: { type: Number, required: true },

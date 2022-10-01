@@ -200,7 +200,7 @@ const addCierreTpvResolver = (root, args, context) => __awaiter(void 0, void 0, 
             };
         }
         return {
-            message: "Cierre añadido correctamenete",
+            message: "Cierre añadido correctamente",
             successful: true,
             token: `Bearer ${token}`,
             cierre: res
@@ -218,6 +218,15 @@ const addCierreTpvResolver = (root, args, context) => __awaiter(void 0, void 0, 
 exports.addCierreTpvResolver = addCierreTpvResolver;
 const deleteCierreTpvResolver = (root, args, context) => __awaiter(void 0, void 0, void 0, function* () {
     const db = database_1.Database.Instance();
+    const isQueryValidId = mongoose_1.default.Types.ObjectId.isValid(args._id);
+    if (!isQueryValidId) {
+        return { message: "ID de cierre inválido", successful: false };
+    }
+    const deletedProd = yield db.CierreTPVDBController.CollectionModel.deleteOne({ _id: args._id });
+    if (deletedProd.deletedCount > 0) {
+        return { message: "Cierre eliminado correctamente", successful: true };
+    }
+    return { message: "No se ha podido eliminar el cierre", successful: false };
 });
 exports.deleteCierreTpvResolver = deleteCierreTpvResolver;
 const updateCierreTpvResolver = (root, args, context) => __awaiter(void 0, void 0, void 0, function* () {

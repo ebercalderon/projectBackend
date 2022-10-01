@@ -131,7 +131,7 @@ export const ventasResolver = async (parent: any, args: VentasFind, context: any
                 }
             })
             .sort({ createdAt: order })
-            .limit(args.limit || 500)
+            .limit(args.limit || 25000)
             .skip(args.offset || 0)
             .exec();
 
@@ -163,7 +163,7 @@ export const ventasResolver = async (parent: any, args: VentasFind, context: any
                 }
             }];
 
-            limite = 1000
+            limite = 25000
         }
 
         const tpv = await db.TPVDBController.CollectionModel.findOne({ nombre: { "$regex": query, "$options": "i" } });
@@ -218,24 +218,9 @@ export const addVentaResolver = async (root: any, args: any, context: any) => {
 
     try {
         const db = Database.Instance();
-        const saleToAdd: mongoose.Document<ISale> = new db.VentasDBController.CollectionModel({
-            productos: args.fields.productos,
-            dineroEntregadoEfectivo: args.fields.dineroEntregadoEfectivo,
-            dineroEntregadoTarjeta: args.fields.dineroEntregadoTarjeta,
-            precioVentaTotalSinDto: args.fields.precioVentaTotalSinDto,
-            precioVentaTotal: args.fields.precioVentaTotal,
-            cambio: args.fields.cambio,
-            cliente: args.fields.cliente,
-            vendidoPor: args.fields.vendidoPor,
-            modificadoPor: args.fields.modificadoPor,
-            tipo: args.fields.tipo,
-            descuentoEfectivo: args.fields.descuentoEfectivo,
-            descuentoPorcentaje: args.fields.descuentoPorcentaje,
-            tpv: args.fields.tpv
-        } as ISale);
-
-        // Añadir nueva venta
-        const res: any = await saleToAdd.save(); // ---> Uso de any como solución temporal
+        const ventaFixed = await FixVentaConsistency(args.fields);
+        const saleToAdd: mongoose.Document<ISale> = new db.VentasDBController.CollectionModel(ventaFixed);
+        const res: any = await saleToAdd.save();
 
         let isUpdatingCorrectly = true;
         // Actualizar la cantidad de productos
@@ -309,3 +294,102 @@ export const updateVentaResolver = async (root: any, args: any, context: any) =>
     return { message: "No se ha podido actualizar la venta", successful: false }
 }
 
+const FixVentaConsistency = async (venta: any): Promise<ISale> => {
+    const db = Database.Instance();
+    const numVentas = await db.VentasDBController.CollectionModel.countDocuments();
+    const currentYear = new Date().getFullYear()
+    const nFactura = `${currentYear}/${numVentas + 1}`
+
+    try {
+        const [productosVendidosFixed, precioVentaTotal, precioVentaTotalSinDto] = FixProductInconsistency(venta.productos)
+
+        if (productosVendidosFixed.length <= 0 || venta.productos.length != productosVendidosFixed.length) {
+            return CreateUncheckedSale(venta, nFactura)
+        }
+
+        const cambio = (venta.dineroEntregadoEfectivo + venta.dineroEntregadoTarjeta) - precioVentaTotal;
+        const ventaFixed = {
+            productos: productosVendidosFixed,
+            numFactura: nFactura,
+            dineroEntregadoEfectivo: venta.dineroEntregadoEfectivo,
+            dineroEntregadoTarjeta: venta.dineroEntregadoTarjeta,
+            precioVentaTotalSinDto: precioVentaTotalSinDto,
+            precioVentaTotal: precioVentaTotal,
+            cambio: cambio > 0 ? Number(cambio.toFixed(2)) : 0,
+            cliente: venta.cliente,
+            vendidoPor: venta.vendidoPor,
+            modificadoPor: venta.modificadoPor,
+            tipo: venta.tipo,
+            descuentoEfectivo: venta.descuentoEfectivo,
+            descuentoPorcentaje: venta.descuentoPorcentaje,
+            tpv: venta.tpv
+        } as ISale
+
+        return ventaFixed;
+    }
+    catch (err) {
+        return CreateUncheckedSale(venta, nFactura)
+    }
+}
+
+const FixProductInconsistency = (productos: ISoldProduct[]): [ISoldProduct[], number, number] => {
+    try {
+        let productosFixed: ISoldProduct[] = []
+        let precioVentaTotal = 0
+        let precioVentaTotalSinDto = 0
+
+        for (let index = 0; index < productos.length; index++) {
+            let producto: ISoldProduct = productos[index];
+            try {
+                if (!producto.familia) { producto.familia = "" }
+                if (!producto.precioCompra) {
+                    const iva = producto.iva || 10
+                    const margen = producto.margen || 20
+                    producto.precioCompra = producto.precioVenta / (1 + ((iva + margen) / 100))
+                    producto.precioCompra = Number(producto.precioCompra.toFixed(2))
+                }
+                if (producto.margen <= 0 || !producto.margen) {
+                    const iva = producto.iva || 10
+                    const precioConIva = producto.precioCompra + (producto.precioCompra * (iva / 100))
+                    producto.margen = 1 - ((producto.precioFinal / precioConIva) * 100)
+                    producto.margen = Number(producto.margen.toFixed(2))
+                }
+                if (producto.precioFinal > producto.precioVenta) {
+                    producto.precioFinal = producto.precioVenta * (1 - (producto.dto / 100))
+                    producto.precioFinal = Number(producto.precioFinal.toFixed(2))
+                }
+                if (producto.precioFinal === producto.precioVenta) { producto.dto = 0 }
+            }
+            catch (err) { }
+            finally {
+                productosFixed.push(producto)
+                precioVentaTotal += producto.precioFinal * producto.cantidadVendida
+                precioVentaTotalSinDto += producto.precioVenta * producto.cantidadVendida
+            }
+        }
+
+        return [productosFixed, Number(precioVentaTotal.toFixed(2)), Number(precioVentaTotalSinDto.toFixed(2))];
+    }
+    catch (err) {
+        return [[], -1, -1]
+    }
+}
+
+const CreateUncheckedSale = (venta: any, numFactura: string): ISale => {
+    return {
+        productos: venta.productos,
+        numFactura: numFactura,
+        dineroEntregadoEfectivo: venta.dineroEntregadoEfectivo,
+        dineroEntregadoTarjeta: venta.dineroEntregadoTarjeta,
+        precioVentaTotalSinDto: venta.precioVentaTotalSinDto,
+        precioVentaTotal: venta.precioVentaTotal,
+        cambio: venta.cambio,
+        cliente: venta.cliente,
+        vendidoPor: venta.vendidoPor,
+        modificadoPor: venta.modificadoPor,
+        tipo: venta.tipo,
+        descuentoEfectivo: venta.descuentoEfectivo,
+        descuentoPorcentaje: venta.descuentoPorcentaje,
+        tpv: venta.tpv
+    } as ISale
+}

@@ -6,6 +6,7 @@ import { ITPV } from './TPV';
 
 export interface ISale extends Document {
     productos: ISoldProduct[],
+    numFactura: string,
     dineroEntregadoEfectivo: number,
     dineroEntregadoTarjeta: number,
     precioVentaTotalSinDto: number,
