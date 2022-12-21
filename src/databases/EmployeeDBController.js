@@ -27,11 +27,9 @@ class EmployeeDBController {
                     nombre: Empleado.nombre,
                     apellidos: Empleado.apellidos,
                     dni: Empleado.dni,
-                    genero: Empleado.genero,
                     email: Empleado.email,
                     rol: Empleado.rol,
                     hashPassword: hashedPassword,
-                    horasPorSemana: Empleado.horasPorSemana,
                     fechaAlta: Empleado.fechaAlta || new Date(Date.now()),
                 });
                 const empleadoExistente = yield this.CollectionModel.exists({
@@ -93,10 +91,6 @@ class EmployeeDBController {
                 return false;
             }
         });
-    }
-    CheckIntegridadEmail() {
-    }
-    CheckIntegridadDNI() {
     }
 }
 exports.EmployeeDBController = EmployeeDBController;

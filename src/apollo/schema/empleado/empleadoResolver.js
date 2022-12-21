@@ -45,7 +45,7 @@ const empleadoResolver = (parent, args, context, info) => __awaiter(void 0, void
 });
 exports.empleadoResolver = empleadoResolver;
 const empleadosResolver = (parent, args, context, info) => __awaiter(void 0, void 0, void 0, function* () {
-    var _a, _b, _c, _d;
+    var _a, _b, _c, _d, _e, _f;
     const db = database_1.Database.Instance();
     if (args.find === null || !args.find || Object.keys(args.find).length === 0 && args.find.constructor === Object) {
         let empleados = yield db.EmployeeDBController.CollectionModel.find({}).limit(args.limit || 3000).exec();
@@ -111,6 +111,43 @@ const empleadosResolver = (parent, args, context, info) => __awaiter(void 0, voi
                 .exec();
         }
         return empleados;
+    }
+    if (((_e = args.find) === null || _e === void 0 ? void 0 : _e.isLibre) !== null && ((_f = args.find) === null || _f === void 0 ? void 0 : _f.isLibre) !== undefined) {
+        let empleados = yield db.EmployeeDBController.CollectionModel.find({})
+            .limit(args.limit || 3000)
+            .exec();
+        const empleadosMap = new Map();
+        for (let index = 0; index < empleados.length; index++) {
+            const empleado = empleados[index];
+            if (empleadosMap.has(empleado._id)) {
+                continue;
+            }
+            empleadosMap.set(empleado._id.valueOf(), empleado);
+        }
+        let empleadosRes = [];
+        let tpvs = yield db.TPVDBController.CollectionModel.find({ libre: false });
+        for (let index = 0; index < tpvs.length; index++) {
+            const tpv = tpvs[index];
+            if (args.find.isLibre) {
+                empleadosMap.delete(tpv.enUsoPor._id.valueOf());
+            }
+            else {
+                const empleado = empleados.find((emp) => emp._id.valueOf() === tpv.enUsoPor._id.valueOf());
+                if (!empleado) {
+                    continue;
+                }
+                empleadosRes.push(empleado);
+            }
+        }
+        if (args.find.isLibre) {
+            empleadosRes = Array.from(empleadosMap.values());
+        }
+        if (empleadosRes) {
+            empleadosRes.forEach((e) => {
+                e.hashPassword = "undefined";
+            });
+            return empleadosRes;
+        }
     }
     return [];
 });

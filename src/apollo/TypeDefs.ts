@@ -4,6 +4,7 @@ import ClienteDefs from "./schema/cliente/clienteDefs";
 import DevolucionDefs from "./schema/devolucion/devolucionDefs";
 import EmpleadoDefs from "./schema/empleado/empleadoDefs";
 import fileDefs from "./schema/file/fileDefs";
+import MermaDefs from "./schema/merma/mermaDefs";
 import productoDefs from "./schema/producto/productoDefs";
 import ProveedorDefs from "./schema/proveedor/proveedorDefs";
 import CierreTpvDefs from "./schema/tpv/cierreTpvDefs";
@@ -22,7 +23,8 @@ const TypeDefs = [
     JwtValidatorDefs,
     fileDefs,
     DevolucionDefs,
-    ProveedorDefs
+    ProveedorDefs,
+    MermaDefs
 ];
 
 export default TypeDefs

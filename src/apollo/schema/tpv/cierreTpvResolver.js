@@ -140,57 +140,63 @@ const addCierreTpvResolver = (root, args, context) => __awaiter(void 0, void 0, 
             return {
                 message: "Error en servidor: clave privada JWT no encontrada",
                 successful: false,
-                token: ""
+                token: null,
+                cierre: null
             };
         }
         const db = database_1.Database.Instance();
-        const payload = { _id: args.cierre.abiertoPor._id, nombre: args.cierre.abiertoPor.nombre, apellidos: args.cierre.abiertoPor.apellidos, email: args.cierre.abiertoPor.email, rol: args.cierre.abiertoPor.rol };
-        const jwtHoursDuration = process.env.JWT_HOURS_DURATION || 1;
-        const token = jsonwebtoken_1.default.sign(payload, secret, {
-            expiresIn: 3600 * Number(jwtHoursDuration)
-        });
-        const tpv = yield db.TPVDBController.CollectionModel.findOne({ _id: args.cierre.tpv, libre: false }).exec();
+        const empleadoCerrando = yield db.EmployeeDBController.CollectionModel.findById(args.cierre.empleadoCerrandoId);
+        if (!empleadoCerrando) {
+            return {
+                message: "Empleado no ecnontrado en el sistema",
+                successful: false,
+                token: null,
+                cierre: null
+            };
+        }
+        const tpv = yield db.TPVDBController.CollectionModel.findOne({ _id: args.cierre.tpv, libre: false, "enUsoPor._id": empleadoCerrando._id }).exec();
         if (!tpv) {
             return {
                 message: "Este empleado no está usando esta TPV en este momento",
                 successful: false,
-                token: `Bearer ${token}`
+                token: null,
+                cierre: null
             };
         }
-        const fechaApertura = new Date().setTime(Number(args.cierre.apertura));
+        const fechaApertura = new Date().setTime(Number(tpv.fechaApertura));
         const fechaActual = Date.now();
-        const ventas = yield db.VentasDBController.CollectionModel.find({ "createdAt": { $gte: fechaApertura, $lt: fechaActual } }).exec();
-        const productosVendidos = ventas.map(v => v.productos).flat();
-        let beneficio = productosVendidos.reduce((total, p) => {
-            return total += (p.precioCompra - p.precioFinal) * p.cantidadVendida;
-        }, 0);
+        const ventas = yield db.VentasDBController.CollectionModel.find({ "createdAt": { $gte: fechaApertura, $lte: fechaActual } }).exec();
         const res = yield db.CierreTPVDBController.CollectionModel.create({
             tpv: args.cierre.tpv,
-            abiertoPor: args.cierre.abiertoPor,
-            cerradoPor: args.cierre.cerradoPor,
+            abiertoPor: tpv.abiertoPor,
+            cerradoPor: empleadoCerrando,
             apertura: fechaApertura,
             cierre: fechaActual,
-            cajaInicial: args.cierre.cajaInicial,
-            numVentas: args.cierre.numVentas,
+            cajaInicial: tpv.cajaInicial,
+            numVentas: ventas.length,
             dineroEsperadoEnCaja: args.cierre.dineroEsperadoEnCaja,
             dineroRealEnCaja: args.cierre.dineroRealEnCaja,
             ventasEfectivo: args.cierre.ventasEfectivo,
             ventasTarjeta: args.cierre.ventasTarjeta,
             ventasTotales: args.cierre.ventasTotales,
             dineroRetirado: args.cierre.dineroRetirado,
-            fondoDeCaja: args.cierre.fondoDeCaja,
-            beneficio: beneficio,
+            fondoDeCaja: args.cierre.dineroRealEnCaja - args.cierre.dineroRetirado,
             nota: args.cierre.nota || ""
         });
         if (res.errors) {
             return {
                 message: "No se ha podido añadir el cierre de caja",
                 successful: false,
-                token: token,
+                token: null,
                 cierre: null
             };
         }
-        const tpvUpdated = yield db.TPVDBController.CollectionModel.updateOne({ _id: tpv._id }, { libre: true });
+        const payload = { _id: empleadoCerrando._id, nombre: empleadoCerrando.nombre, apellidos: empleadoCerrando.apellidos, email: empleadoCerrando.email, rol: empleadoCerrando.rol };
+        const jwtHoursDuration = process.env.JWT_HOURS_DURATION || 1;
+        const token = jsonwebtoken_1.default.sign(payload, secret, {
+            expiresIn: 3600 * Number(jwtHoursDuration)
+        });
+        const tpvUpdated = yield db.TPVDBController.CollectionModel.updateOne({ _id: tpv._id }, { libre: true, abiertoPor: null, enUsoPor: null, fechaApertura: null });
         if (tpvUpdated.modifiedCount <= 0) {
             return {
                 message: "No se ha podido liberar la TPV",
@@ -210,7 +216,7 @@ const addCierreTpvResolver = (root, args, context) => __awaiter(void 0, void 0, 
         return {
             message: err,
             successful: false,
-            token: "",
+            token: null,
             cierre: null
         };
     }

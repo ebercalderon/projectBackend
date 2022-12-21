@@ -19,11 +19,9 @@ export class EmployeeDBController {
 				nombre: Empleado.nombre,
 				apellidos: Empleado.apellidos,
 				dni: Empleado.dni,
-				genero: Empleado.genero,
 				email: Empleado.email,
 				rol: Empleado.rol,
 				hashPassword: hashedPassword,
-				horasPorSemana: Empleado.horasPorSemana,
 				fechaAlta: Empleado.fechaAlta || new Date(Date.now()),
 			});
 
@@ -87,13 +85,5 @@ export class EmployeeDBController {
 			console.error(err);
 			return false;
 		}
-	}
-
-	CheckIntegridadEmail() {
-
-	}
-
-	CheckIntegridadDNI() {
-
 	}
 }

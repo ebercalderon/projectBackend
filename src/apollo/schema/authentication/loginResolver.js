@@ -44,7 +44,7 @@ const loginResolver = (parent, args, context, info) => __awaiter(void 0, void 0,
                 payload = { _id: empleado._id, nombre: empleado.nombre, apellidos: empleado.apellidos, email: empleado.email, rol: empleado.rol };
             }
             const jwtHoursDuration = process.env.JWT_HOURS_DURATION || 1;
-            const token = yield jsonwebtoken_1.default.sign(payload, secret, {
+            const token = jsonwebtoken_1.default.sign(payload, secret, {
                 expiresIn: 3600 * Number(jwtHoursDuration)
             });
             return {

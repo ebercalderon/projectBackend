@@ -49,6 +49,7 @@ const EmpleadoDefs = gql`
         nombre: String
         rol: String
         query: String
+        isLibre: Boolean
     }
 
     ##### Query #####

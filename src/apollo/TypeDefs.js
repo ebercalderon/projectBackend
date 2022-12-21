@@ -9,6 +9,7 @@ const clienteDefs_1 = __importDefault(require("./schema/cliente/clienteDefs"));
 const devolucionDefs_1 = __importDefault(require("./schema/devolucion/devolucionDefs"));
 const empleadoDefs_1 = __importDefault(require("./schema/empleado/empleadoDefs"));
 const fileDefs_1 = __importDefault(require("./schema/file/fileDefs"));
+const mermaDefs_1 = __importDefault(require("./schema/merma/mermaDefs"));
 const productoDefs_1 = __importDefault(require("./schema/producto/productoDefs"));
 const proveedorDefs_1 = __importDefault(require("./schema/proveedor/proveedorDefs"));
 const cierreTpvDefs_1 = __importDefault(require("./schema/tpv/cierreTpvDefs"));
@@ -25,6 +26,7 @@ const TypeDefs = [
     jwtValidatorDefs_1.default,
     fileDefs_1.default,
     devolucionDefs_1.default,
-    proveedorDefs_1.default
+    proveedorDefs_1.default,
+    mermaDefs_1.default
 ];
 exports.default = TypeDefs;

@@ -1,21 +1,6 @@
 import mongoose from "mongoose";
 import { Database } from "../../../databases/database";
-import { IProveedor } from "../../../types/Proveedor";
-
-interface ProveedorInput {
-    nombre: string
-    direccion: string
-    localidad: string
-    provincia: string
-    cp: string
-    pais: string
-    telefono: string
-    email: string
-    contacto: string
-    createdAt: string
-    updatedAt: string
-    cif: string
-}
+import { IProveedor, IProveedorContacto } from "../../../types/Proveedor";
 
 export const proveedoresResolver = async (parent: any, args: { find: any, limit: number }, context: any, info: any) => {
     // Check de autenticidad para aceptar peticiones válidas. Descomentar en producción
@@ -66,43 +51,45 @@ export const proveedoresResolver = async (parent: any, args: { find: any, limit:
     return [];
 }
 
-export const addProveedorResolver = async (root: any, args: { proveedor: ProveedorInput }, context: any) => {
-    // Check de autenticidad para aceptar peticiones válidas. Descomentar en producción
-    // if (!context.user) { throw new UserInputError('Usuario sin autenticar'); }
-
+export const addProveedorResolver = async (root: any, args: { fields: IProveedor }, context: any) => {
     const db = Database.Instance();
 
-    const prov = await db.ProveedorDBController.CollectionModel.exists({ nombre: args.proveedor.nombre });
-    if (prov !== null) {
-        return { message: "Nombre del proveedor en uso", successful: false }
+    const prov = await db.ProveedorDBController.CollectionModel.exists({ nombre: args.fields.nombre });
+    if (prov) {
+        return { message: "Nombre del proveedor en uso", successful: false, data: null }
     }
 
-    const cifEnUso = await db.ProveedorDBController.CollectionModel.find({ nombre: args.proveedor.cif });
-    if (cifEnUso.length > 0) {
-        return { message: "El CIF del proveedor está en uso", successful: false }
+    const cif = await db.ProveedorDBController.CollectionModel.exists({ nombre: args.fields.cif });
+    if (cif) {
+        return { message: "El CIF del proveedor está en uso", successful: false, data: null }
+    }
+
+    const proveedorContacto: IProveedorContacto = {
+        nombre: args.fields.contacto?.nombre || "",
+        telefono: args.fields.contacto?.telefono || "",
+        email: args.fields.contacto?.email || ""
     }
 
     const updatedProv: mongoose.Document<IProveedor> = new db.ProveedorDBController.CollectionModel({
-        nombre: args.proveedor.nombre,
-        cif: args.proveedor.cif,
-        direccion: args.proveedor.direccion,
-        contacto: args.proveedor.contacto,
-        telefono: args.proveedor.telefono,
-        localidad: args.proveedor.localidad,
-        provincia: args.proveedor.provincia,
-        cp: args.proveedor.cp,
-        pais: args.proveedor.pais,
-        email: args.proveedor.email,
-        nombreContacto: args.proveedor.contacto,
+        nombre: args.fields.nombre,
+        cif: args.fields.cif,
+        direccion: args.fields.direccion,
+        contacto: proveedorContacto,
+        telefono: args.fields.telefono,
+        localidad: args.fields.localidad,
+        provincia: args.fields.provincia,
+        cp: args.fields.cp,
+        pais: args.fields.pais,
+        email: args.fields.email,
+        nombreContacto: args.fields.contacto,
     } as unknown as IProveedor);
 
     const resultado = await updatedProv.save();
-
     if (resultado.id) {
-        return { message: "Proveedor añadido correctamente", successful: true, }
+        return { message: "Proveedor añadido correctamente", successful: true, data: resultado }
     }
 
-    return { message: "No se ha podido añadir el proveedor", successful: false }
+    return { message: "No se ha podido añadir el proveedor", successful: false, data: null }
 }
 
 export const deleteProveedorResolver = async (root: any, args: { _id: string }, context: any) => {
@@ -125,7 +112,7 @@ export const deleteProveedorResolver = async (root: any, args: { _id: string }, 
     return { message: "No se ha podido eliminar el proveedor", successful: false }
 }
 
-export const updateProveedorResolver = async (root: any, args: { _id: string, proveedor: ProveedorInput }, context: any) => {
+export const updateProveedorResolver = async (root: any, args: { _id: string, proveedor: IProveedor }, context: any) => {
     // Check de autenticidad para aceptar peticiones válidas. Descomentar en producción
     // if (!context.user) { throw new UserInputError('Usuario sin autenticar'); }
 
@@ -146,7 +133,6 @@ export const updateProveedorResolver = async (root: any, args: { _id: string, pr
         cp: args.proveedor.cp,
         pais: args.proveedor.pais,
         email: args.proveedor.email,
-        nombreContacto: args.proveedor.contacto,
     } as unknown as IProveedor;
 
     const resultadoUpdate = await db.ProveedorDBController.CollectionModel.updateOne({ _id: args._id }, { $set: updatedProv });

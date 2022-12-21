@@ -52,7 +52,7 @@ class Database {
         this.DevolucionDBController = new DevolucionDBController_1.DevolucionDBController(new devolucionModel_1.default().Model);
         this.MermaDBController = new MermaDBController_1.MermaDBController(new mermaModel_1.Merma().Model);
         this.ProveedorDBController = new ProveedorDBController_1.ProveedorDBController(new proveedorModel_1.default().Model);
-        this.db.connect(dbInformation.url).then(() => {
+        this.db.connect(dbInformation.url + dbInformation.dbName).then(() => {
             console.log("¡Conexión realizada con la base de datos!");
         }).catch((err) => {
             console.log("¡No se pudo realizar la conexión con la base de datos!", err);
@@ -71,7 +71,7 @@ class Database {
                     apellidos: "Admin",
                     dni: "Administrador",
                     rol: "Administrador",
-                    email: "admin@erp.com"
+                    email: "admin@project.com"
                 };
                 const pw = "admin";
                 yield this.EmployeeDBController.CreateEmployee(empleado, pw);
@@ -87,7 +87,7 @@ class Database {
                         apellidos: "Admin",
                         dni: "Administrador",
                         rol: "Administrador",
-                        email: "admin@erp.com"
+                        email: "admin@project.com"
                     }
                 };
                 const TPV2 = {
@@ -99,7 +99,7 @@ class Database {
                         apellidos: "Admin",
                         dni: "Administrador",
                         rol: "Administrador",
-                        email: "admin@erp.com"
+                        email: "admin@project.com"
                     }
                 };
                 yield this.TPVDBController.CollectionModel.create(TPV1);

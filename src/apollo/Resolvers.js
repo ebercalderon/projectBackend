@@ -6,6 +6,7 @@ const clienteResolver_1 = require("./schema/cliente/clienteResolver");
 const devolucionResolver_1 = require("./schema/devolucion/devolucionResolver");
 const empleadoResolver_1 = require("./schema/empleado/empleadoResolver");
 const fileResolvers_1 = require("./schema/file/fileResolvers");
+const mermaResolver_1 = require("./schema/merma/mermaResolver");
 const productoResolver_1 = require("./schema/producto/productoResolver");
 const proveedorResolvers_1 = require("./schema/proveedor/proveedorResolvers");
 const cierreTpvResolver_1 = require("./schema/tpv/cierreTpvResolver");
@@ -29,7 +30,9 @@ const Resolvers = {
         validateJwt: jwtValidatorResolver_1.jwtValidatorResolver,
         devolucion: devolucionResolver_1.devolucionResolver,
         devoluciones: devolucionResolver_1.devolucionesResolver,
-        proveedores: proveedorResolvers_1.proveedoresResolver
+        proveedores: proveedorResolvers_1.proveedoresResolver,
+        merma: mermaResolver_1.mermaResolver,
+        mermas: mermaResolver_1.mermasResolver
     },
     Mutation: {
         addProducto: productoResolver_1.addProductoResolver,
@@ -49,6 +52,7 @@ const Resolvers = {
         addTPV: tpvResolver_1.addTpvResolver,
         deleteTPV: tpvResolver_1.deleteTpvResolver,
         updateTPV: tpvResolver_1.updateTpvResolver,
+        transferirTpv: tpvResolver_1.transferirTpvResolver,
         ocupyTPV: tpvResolver_1.ocupyTpvResolver,
         freeTPV: tpvResolver_1.freeTpvResolver,
         addCierreTPV: cierreTpvResolver_1.addCierreTpvResolver,
@@ -60,7 +64,10 @@ const Resolvers = {
         updateDevolucion: devolucionResolver_1.updateDevolucionResolver,
         addProveedor: proveedorResolvers_1.addProveedorResolver,
         deleteProveedor: proveedorResolvers_1.deleteProveedorResolver,
-        updateProveedor: proveedorResolvers_1.updateProveedorResolver
+        updateProveedor: proveedorResolvers_1.updateProveedorResolver,
+        addMerma: mermaResolver_1.addMermaResolver,
+        deleteMerma: mermaResolver_1.deleteMermaResolver,
+        updateMerma: mermaResolver_1.updateMermaResolver,
     }
 };
 exports.default = Resolvers;

@@ -19,7 +19,11 @@ export const productoResolver = async (parent: any, args: ProductoFind, context:
     }
 
     if (args.find.nombre) {
-        const producto = await db.ProductDBController.CollectionModel.findOne({ nombre: { "$regex": args.find.nombre, "$options": "i" } }).exec();
+        const producto = await db.ProductDBController.CollectionModel.findOne({
+            nombre: {
+                "$regex": args.find.nombre, "$options": "i"
+            }
+        }).exec();
 
         if (producto) return producto;
     }
@@ -115,9 +119,6 @@ export const addProductoResolver = async (root: any, args: { producto: ProductoA
     // if (!context.user) { throw new UserInputError('Usuario sin autenticar'); }
 
     const db = Database.Instance();
-
-    console.log(args);
-
 
     const producto = await db.ProductDBController.CollectionModel.exists({ ean: args.producto.ean });
     if (producto !== null) {

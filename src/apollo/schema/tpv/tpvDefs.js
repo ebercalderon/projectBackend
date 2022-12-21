@@ -7,11 +7,13 @@ const tpvDefs = (0, apollo_server_express_1.gql) `
     type TPV {
         _id: ID!
         nombre: String
+        abiertoPor: Empleado
         enUsoPor: Empleado
         libre: Boolean
         cajaInicial: Float
         createdAt: String
         updatedAt: String
+        fechaApertura: String
     }
 
     type Empleado {
@@ -27,6 +29,12 @@ const tpvDefs = (0, apollo_server_express_1.gql) `
     }
 
     type TPVMutationResponse {
+        message: String!
+        successful: Boolean!
+    }
+
+    type TPVMutationTransferirResponse {
+        token: String!
         message: String!
         successful: Boolean!
     }
@@ -62,6 +70,8 @@ const tpvDefs = (0, apollo_server_express_1.gql) `
         deleteTPV(_id: ID!): TPVMutationResponse!
         
         updateTPV(_id: ID!, nombre: String, enUsoPor: ID, libre: Boolean, cajaInicial: Int): TPVMutationResponse!
+        
+        transferirTpv(idEmpleadoDestinatario: ID!, idTPV: ID!): TPVMutationTransferirResponse!
 
         ocupyTPV(idEmpleado: ID!, idTPV: ID!, cajaInicial: Float!): TPVMutationJwtResponse!
         

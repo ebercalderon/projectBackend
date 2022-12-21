@@ -1,10 +1,8 @@
 import { UserInputError } from "apollo-server-express";
 import { Database } from "../../../databases/database";
 import jwt from "jsonwebtoken";
-import { CierreTPVInput } from "../../../types/types";
+import { CierreTPVInput, CierreTPVUpdateInput, JWTPayload } from "../../../types/types";
 import { ICierreTPV } from "../../../types/TPV";
-import { ISale } from "../../../types/Venta";
-import { ISoldProduct } from "../../../types/Producto";
 import mongoose from "mongoose";
 
 export const cierreTpvResolver = async (parent: any, args: any, context: any, info: any) => {
@@ -147,61 +145,58 @@ export const cierreTpvsResolver = async (parent: any, args: any, context: any, i
 }
 
 export const addCierreTpvResolver = async (root: any, args: { cierre: CierreTPVInput }, context: any) => {
-    // Check de autenticidad para aceptar peticiones válidas. Descomentar en producción
-    // if (!context.user) { throw new UserInputError('Usuario sin autenticar'); }
     try {
         const secret = process.env.JWT_SECRET;
         if (!secret) {
             return {
                 message: "Error en servidor: clave privada JWT no encontrada",
                 successful: false,
-                token: ""
+                token: null,
+                cierre: null
             }
         }
 
         const db = Database.Instance();
 
-        const payload = { _id: args.cierre.abiertoPor._id, nombre: args.cierre.abiertoPor.nombre, apellidos: args.cierre.abiertoPor.apellidos, email: args.cierre.abiertoPor.email, rol: args.cierre.abiertoPor.rol };
-        const jwtHoursDuration = process.env.JWT_HOURS_DURATION || 1;
-        const token = jwt.sign(payload, secret, {
-            expiresIn: 3600 * Number(jwtHoursDuration)
-        });
+        const empleadoCerrando = await db.EmployeeDBController.CollectionModel.findById(args.cierre.empleadoCerrandoId);
+        if (!empleadoCerrando) {
+            return {
+                message: "Empleado no ecnontrado en el sistema",
+                successful: false,
+                token: null,
+                cierre: null
+            }
+        }
 
-        const tpv = await db.TPVDBController.CollectionModel.findOne({ _id: args.cierre.tpv, libre: false }).exec();
+        const tpv = await db.TPVDBController.CollectionModel.findOne({ _id: args.cierre.tpv, libre: false, "enUsoPor._id": empleadoCerrando._id }).exec();
         if (!tpv) {
             return {
                 message: "Este empleado no está usando esta TPV en este momento",
                 successful: false,
-                token: `Bearer ${token}`
+                token: null,
+                cierre: null
             }
         }
 
-        const fechaApertura = new Date().setTime(Number(args.cierre.apertura));
+        const fechaApertura = new Date().setTime(Number(tpv.fechaApertura));
         const fechaActual = Date.now();
-
-        const ventas = await db.VentasDBController.CollectionModel.find({ "createdAt": { $gte: fechaApertura, $lt: fechaActual } }).exec();
-        const productosVendidos: ISoldProduct[] = ventas.map(v => v.productos).flat();
-
-        let beneficio = productosVendidos.reduce((total: number, p: ISoldProduct): number => {
-            return total += (p.precioCompra - p.precioFinal) * p.cantidadVendida;
-        }, 0);
+        const ventas = await db.VentasDBController.CollectionModel.find({ "createdAt": { $gte: fechaApertura, $lte: fechaActual } }).exec();
 
         const res = await db.CierreTPVDBController.CollectionModel.create({
             tpv: args.cierre.tpv,
-            abiertoPor: args.cierre.abiertoPor,
-            cerradoPor: args.cierre.cerradoPor,
+            abiertoPor: tpv.abiertoPor,
+            cerradoPor: empleadoCerrando,
             apertura: fechaApertura,
             cierre: fechaActual,
-            cajaInicial: args.cierre.cajaInicial,
-            numVentas: args.cierre.numVentas,
+            cajaInicial: tpv.cajaInicial,
+            numVentas: ventas.length,
             dineroEsperadoEnCaja: args.cierre.dineroEsperadoEnCaja,
             dineroRealEnCaja: args.cierre.dineroRealEnCaja,
             ventasEfectivo: args.cierre.ventasEfectivo,
             ventasTarjeta: args.cierre.ventasTarjeta,
             ventasTotales: args.cierre.ventasTotales,
             dineroRetirado: args.cierre.dineroRetirado,
-            fondoDeCaja: args.cierre.fondoDeCaja,
-            beneficio: beneficio,
+            fondoDeCaja: args.cierre.dineroRealEnCaja - args.cierre.dineroRetirado,
             nota: args.cierre.nota || ""
         } as unknown as ICierreTPV);
 
@@ -209,13 +204,18 @@ export const addCierreTpvResolver = async (root: any, args: { cierre: CierreTPVI
             return {
                 message: "No se ha podido añadir el cierre de caja",
                 successful: false,
-                token: token,
+                token: null,
                 cierre: null
             }
         }
 
-        const tpvUpdated = await db.TPVDBController.CollectionModel.updateOne({ _id: tpv._id }, { libre: true });
+        const payload: JWTPayload = { _id: empleadoCerrando._id, nombre: empleadoCerrando.nombre, apellidos: empleadoCerrando.apellidos, email: empleadoCerrando.email, rol: empleadoCerrando.rol };
+        const jwtHoursDuration = process.env.JWT_HOURS_DURATION || 1;
+        const token = jwt.sign(payload, secret, {
+            expiresIn: 3600 * Number(jwtHoursDuration)
+        });
 
+        const tpvUpdated = await db.TPVDBController.CollectionModel.updateOne({ _id: tpv._id }, { libre: true, abiertoPor: null, enUsoPor: null, fechaApertura: null });
         if (tpvUpdated.modifiedCount <= 0) {
             return {
                 message: "No se ha podido liberar la TPV",
@@ -236,7 +236,7 @@ export const addCierreTpvResolver = async (root: any, args: { cierre: CierreTPVI
         return {
             message: err,
             successful: false,
-            token: "",
+            token: null,
             cierre: null
         }
     }
@@ -262,7 +262,7 @@ export const deleteCierreTpvResolver = async (root: any, args: any, context: any
     return { message: "No se ha podido eliminar el cierre", successful: false }
 }
 
-export const updateCierreTpvResolver = async (root: any, args: any, context: any) => {
+export const updateCierreTpvResolver = async (root: any, args: { cierre: CierreTPVUpdateInput }, context: any) => {
     // Check de autenticidad para aceptar peticiones válidas. Descomentar en producción
     // if (!context.user) { throw new UserInputError('Usuario sin autenticar'); }
 

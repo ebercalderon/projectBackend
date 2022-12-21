@@ -1,9 +1,13 @@
 import { Document } from 'mongoose';
 import { IEmployee } from './Empleado';
-import { ILostProduct } from './Producto';
+import { IProductoMermado } from './Producto';
 
 export interface IMerma extends Document {
-    productos: ILostProduct[],
+    productos: IProductoMermado[],
     creadoPor: IEmployee,
-    modificadoPor: IEmployee,
+    costeProductos: number,
+    ventasPerdidas: number,
+    beneficioPerdido: number,
+    createdAt: string,
+    updatedAt: string
 }

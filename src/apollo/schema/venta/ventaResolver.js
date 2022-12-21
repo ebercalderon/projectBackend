@@ -215,7 +215,7 @@ const addVentaResolver = (root, args, context) => __awaiter(void 0, void 0, void
         const res = yield saleToAdd.save();
         let isUpdatingCorrectly = true;
         args.fields.productos.forEach((p) => __awaiter(void 0, void 0, void 0, function* () {
-            const err = yield db.ProductDBController.CollectionModel.findOneAndUpdate({ _id: p._id }, { "$inc": { "cantidad": -p.cantidadVendida } });
+            const err = yield db.ProductDBController.CollectionModel.findOneAndUpdate({ _id: p._id }, { "$inc": { "cantidad": -p.cantidadVendida } }, { timestamps: false });
             if ((err === null || err === void 0 ? void 0 : err.errors) && isUpdatingCorrectly) {
                 isUpdatingCorrectly = false;
             }
@@ -276,18 +276,19 @@ const FixVentaConsistency = (venta) => __awaiter(void 0, void 0, void 0, functio
     const currentYear = new Date().getFullYear();
     const nFactura = `${currentYear}/${numVentas + 1}`;
     try {
-        const [productosVendidosFixed, precioVentaTotal, precioVentaTotalSinDto] = FixProductInconsistency(venta.productos);
+        const [productosVendidosFixed, precioVentaTotalProductos, precioVentaTotalSinDtoProductos] = FixProductsInconsistency(venta.productos);
         if (productosVendidosFixed.length <= 0 || venta.productos.length != productosVendidosFixed.length) {
             return CreateUncheckedSale(venta, nFactura);
         }
+        let precioVentaTotal = (precioVentaTotalProductos - venta.descuentoEfectivo) * (1 - (venta.descuentoPorcentaje / 100));
         const cambio = (venta.dineroEntregadoEfectivo + venta.dineroEntregadoTarjeta) - precioVentaTotal;
         const ventaFixed = {
             productos: productosVendidosFixed,
             numFactura: nFactura,
             dineroEntregadoEfectivo: venta.dineroEntregadoEfectivo,
             dineroEntregadoTarjeta: venta.dineroEntregadoTarjeta,
-            precioVentaTotalSinDto: precioVentaTotalSinDto,
-            precioVentaTotal: precioVentaTotal,
+            precioVentaTotalSinDto: precioVentaTotalSinDtoProductos,
+            precioVentaTotal: Math.round(precioVentaTotal * 100) / 100,
             cambio: cambio > 0 ? Number(cambio.toFixed(2)) : 0,
             cliente: venta.cliente,
             vendidoPor: venta.vendidoPor,
@@ -303,7 +304,7 @@ const FixVentaConsistency = (venta) => __awaiter(void 0, void 0, void 0, functio
         return CreateUncheckedSale(venta, nFactura);
     }
 });
-const FixProductInconsistency = (productos) => {
+const FixProductsInconsistency = (productos) => {
     try {
         let productosFixed = [];
         let precioVentaTotal = 0;

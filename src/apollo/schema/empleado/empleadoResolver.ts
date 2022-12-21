@@ -116,6 +116,50 @@ export const empleadosResolver = async (parent: any, args: EmpleadosFind, contex
         return empleados;
     }
 
+    if (args.find?.isLibre !== null && args.find?.isLibre !== undefined) {
+        let empleados = await db.EmployeeDBController.CollectionModel.find({})
+            .limit(args.limit || 3000)
+            .exec();
+
+        const empleadosMap = new Map<string, IEmployee & { _id: mongoose.Types.ObjectId }>()
+        for (let index = 0; index < empleados.length; index++) {
+            const empleado = empleados[index];
+
+            if (empleadosMap.has(empleado._id)) { continue; }
+            empleadosMap.set(empleado._id.valueOf(), empleado)
+        }
+
+        let empleadosRes: (IEmployee & {
+            _id: mongoose.Types.ObjectId;
+        })[] = []
+
+        let tpvs = await db.TPVDBController.CollectionModel.find({ libre: false })
+        for (let index = 0; index < tpvs.length; index++) {
+            const tpv = tpvs[index];
+
+            if (args.find.isLibre) {
+                empleadosMap.delete(tpv.enUsoPor._id.valueOf())
+            }
+            else {
+                const empleado = empleados.find((emp) => emp._id.valueOf() === tpv.enUsoPor._id.valueOf())
+                if (!empleado) { continue; }
+
+                empleadosRes.push(empleado)
+            }
+        }
+
+        if (args.find.isLibre) {
+            empleadosRes = Array.from(empleadosMap.values())
+        }
+
+        if (empleadosRes) {
+            empleadosRes.forEach((e) => {
+                e.hashPassword = "undefined";
+            })
+            return empleadosRes;
+        }
+    }
+
     return [];
 }
 

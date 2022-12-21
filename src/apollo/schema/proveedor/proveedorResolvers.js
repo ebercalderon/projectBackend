@@ -55,33 +55,39 @@ const proveedoresResolver = (parent, args, context, info) => __awaiter(void 0, v
 });
 exports.proveedoresResolver = proveedoresResolver;
 const addProveedorResolver = (root, args, context) => __awaiter(void 0, void 0, void 0, function* () {
+    var _b, _c, _d;
     const db = database_1.Database.Instance();
-    const prov = yield db.ProveedorDBController.CollectionModel.exists({ nombre: args.proveedor.nombre });
-    if (prov !== null) {
-        return { message: "Nombre del proveedor en uso", successful: false };
+    const prov = yield db.ProveedorDBController.CollectionModel.exists({ nombre: args.fields.nombre });
+    if (prov) {
+        return { message: "Nombre del proveedor en uso", successful: false, data: null };
     }
-    const cifEnUso = yield db.ProveedorDBController.CollectionModel.find({ nombre: args.proveedor.cif });
-    if (cifEnUso.length > 0) {
-        return { message: "El CIF del proveedor está en uso", successful: false };
+    const cif = yield db.ProveedorDBController.CollectionModel.exists({ nombre: args.fields.cif });
+    if (cif) {
+        return { message: "El CIF del proveedor está en uso", successful: false, data: null };
     }
+    const proveedorContacto = {
+        nombre: ((_b = args.fields.contacto) === null || _b === void 0 ? void 0 : _b.nombre) || "",
+        telefono: ((_c = args.fields.contacto) === null || _c === void 0 ? void 0 : _c.telefono) || "",
+        email: ((_d = args.fields.contacto) === null || _d === void 0 ? void 0 : _d.email) || ""
+    };
     const updatedProv = new db.ProveedorDBController.CollectionModel({
-        nombre: args.proveedor.nombre,
-        cif: args.proveedor.cif,
-        direccion: args.proveedor.direccion,
-        contacto: args.proveedor.contacto,
-        telefono: args.proveedor.telefono,
-        localidad: args.proveedor.localidad,
-        provincia: args.proveedor.provincia,
-        cp: args.proveedor.cp,
-        pais: args.proveedor.pais,
-        email: args.proveedor.email,
-        nombreContacto: args.proveedor.contacto,
+        nombre: args.fields.nombre,
+        cif: args.fields.cif,
+        direccion: args.fields.direccion,
+        contacto: proveedorContacto,
+        telefono: args.fields.telefono,
+        localidad: args.fields.localidad,
+        provincia: args.fields.provincia,
+        cp: args.fields.cp,
+        pais: args.fields.pais,
+        email: args.fields.email,
+        nombreContacto: args.fields.contacto,
     });
     const resultado = yield updatedProv.save();
     if (resultado.id) {
-        return { message: "Proveedor añadido correctamente", successful: true, };
+        return { message: "Proveedor añadido correctamente", successful: true, data: resultado };
     }
-    return { message: "No se ha podido añadir el proveedor", successful: false };
+    return { message: "No se ha podido añadir el proveedor", successful: false, data: null };
 });
 exports.addProveedorResolver = addProveedorResolver;
 const deleteProveedorResolver = (root, args, context) => __awaiter(void 0, void 0, void 0, function* () {
@@ -114,7 +120,6 @@ const updateProveedorResolver = (root, args, context) => __awaiter(void 0, void 
         cp: args.proveedor.cp,
         pais: args.proveedor.pais,
         email: args.proveedor.email,
-        nombreContacto: args.proveedor.contacto,
     };
     const resultadoUpdate = yield db.ProveedorDBController.CollectionModel.updateOne({ _id: args._id }, { $set: updatedProv });
     if (resultadoUpdate.modifiedCount > 0) {

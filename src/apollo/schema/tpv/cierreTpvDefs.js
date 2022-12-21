@@ -24,20 +24,32 @@ const cierreTpvDefs = (0, apollo_server_express_1.gql) `
     }
 
     input CierreTPVInput {
-        _id: ID,
         tpv: ID!,
-        cajaInicial: Float!,
-        abiertoPor: EmpleadoInput!,
-        cerradoPor: EmpleadoInput!,
-        apertura: String!,
-        cierre: String,
+        empleadoCerrandoId: ID!
         ventasEfectivo: Float!,
         ventasTarjeta: Float!,
         ventasTotales: Float!,
         dineroEsperadoEnCaja: Float!,
         dineroRealEnCaja: Float!,
         dineroRetirado:Float!,
-        fondoDeCaja: Float!,
+        nota: String,
+    }
+
+    input CierreTPVUpdateInput {
+        _id: ID!,
+        tpv: ID,
+        cajaInicial: Float,
+        abiertoPor: EmpleadoInput,
+        cerradoPor: EmpleadoInput,
+        apertura: String,
+        cierre: String,
+        ventasEfectivo: Float,
+        ventasTarjeta: Float,
+        ventasTotales: Float,
+        dineroEsperadoEnCaja: Float,
+        dineroRealEnCaja: Float,
+        dineroRetirado:Float,
+        fondoDeCaja: Float,
         nota: String,
     }
 
@@ -83,7 +95,7 @@ const cierreTpvDefs = (0, apollo_server_express_1.gql) `
     type Mutation {
         addCierreTPV(cierre: CierreTPVInput!): CierreTPVMutationResponse!        
         deleteCierreTPV(_id: ID!): TPVMutationResponse!        
-        updateCierreTPV(cierre: CierreTPVInput): CierreTPVMutationResponse!
+        updateCierreTPV(cierre: CierreTPVUpdateInput): CierreTPVMutationResponse!
     }
 `;
 exports.default = cierreTpvDefs;

@@ -4,10 +4,11 @@ import { addClienteResolver, clienteResolver, clientesResolver, deleteClienteRes
 import { addDevolucionResolver, deleteDevolucionResolver, devolucionesResolver, devolucionResolver, updateDevolucionResolver } from "./schema/devolucion/devolucionResolver";
 import { addEmpleadoResolver, deleteEmpleadoResolver, empleadoResolver, empleadosResolver, updateEmpleadoResolver } from "./schema/empleado/empleadoResolver";
 import { uploadCierresFileResolver, uploadProductoFileResolver, uploadVentasFileResolver } from "./schema/file/fileResolvers";
+import { addMermaResolver, deleteMermaResolver, mermaResolver, mermasResolver, updateMermaResolver } from "./schema/merma/mermaResolver";
 import { addProductoResolver, deleteProductoResolver, productoResolver, productosResolver, updateProductoResolver } from "./schema/producto/productoResolver";
 import { addProveedorResolver, deleteProveedorResolver, proveedoresResolver, updateProveedorResolver } from "./schema/proveedor/proveedorResolvers";
 import { addCierreTpvResolver, cierreTpvResolver, cierreTpvsResolver, deleteCierreTpvResolver, updateCierreTpvResolver } from "./schema/tpv/cierreTpvResolver";
-import { addTpvResolver, deleteTpvResolver, freeTpvResolver, ocupyTpvResolver, tpvResolver, tpvsResolver, updateTpvResolver } from "./schema/tpv/tpvResolver";
+import { addTpvResolver, deleteTpvResolver, freeTpvResolver, ocupyTpvResolver, tpvResolver, tpvsResolver, transferirTpvResolver, updateTpvResolver } from "./schema/tpv/tpvResolver";
 import { addVentaResolver, deleteVentaResolver, updateVentaResolver, ventaResolver, ventasResolver } from "./schema/venta/ventaResolver";
 
 const Resolvers = {
@@ -28,7 +29,9 @@ const Resolvers = {
         validateJwt: jwtValidatorResolver,
         devolucion: devolucionResolver,
         devoluciones: devolucionesResolver,
-        proveedores: proveedoresResolver
+        proveedores: proveedoresResolver,
+        merma: mermaResolver,
+        mermas: mermasResolver
     },
     Mutation: {
         addProducto: addProductoResolver,
@@ -52,6 +55,7 @@ const Resolvers = {
         addTPV: addTpvResolver,
         deleteTPV: deleteTpvResolver,
         updateTPV: updateTpvResolver,
+        transferirTpv: transferirTpvResolver,
         ocupyTPV: ocupyTpvResolver,
         freeTPV: freeTpvResolver,
 
@@ -66,7 +70,11 @@ const Resolvers = {
 
         addProveedor: addProveedorResolver,
         deleteProveedor: deleteProveedorResolver,
-        updateProveedor: updateProveedorResolver
+        updateProveedor: updateProveedorResolver,
+
+        addMerma: addMermaResolver,
+        deleteMerma: deleteMermaResolver,
+        updateMerma: updateMermaResolver,
     }
 };
 

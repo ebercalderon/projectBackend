@@ -50,6 +50,7 @@ const EmpleadoDefs = (0, apollo_server_express_1.gql) `
         nombre: String
         rol: String
         query: String
+        isLibre: Boolean
     }
 
     ##### Query #####

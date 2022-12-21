@@ -4,12 +4,17 @@ export interface IProveedor extends Document {
     nombre: string,
     cif: string,
     direccion?: string,
-    contacto?: string,
+    contacto?: IProveedorContacto,
     telefono?: string
     localidad?: string
     provincia?: string,
     cp?: string,
     pais?: string,
     email?: string,
-    nombreContacto?: string,
+}
+
+export interface IProveedorContacto {
+    nombre: string,
+    telefono?: string
+    email?: string,
 }

@@ -16,7 +16,7 @@ const gatewayUrl = process.env.ERPGATEWAY_URL;
 if (!gatewayUrl) { throw "GATEWAY_URL no encontrado" }
 
 const corsOptions = {
-  origin: [gatewayUrl, "https://studio.apollographql.com", "http://localhost:8081/", "http://0.0.0.0:8081/"]
+  origin: [gatewayUrl, "https://studio.apollographql.com", "http://localhost:8080/", "http://0.0.0.0:8080/"]
 };
 
 const myPlugin = {

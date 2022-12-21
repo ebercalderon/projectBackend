@@ -26,7 +26,11 @@ const productoResolver = (parent, args, context, info) => __awaiter(void 0, void
             return producto;
     }
     if (args.find.nombre) {
-        const producto = yield db.ProductDBController.CollectionModel.findOne({ nombre: { "$regex": args.find.nombre, "$options": "i" } }).exec();
+        const producto = yield db.ProductDBController.CollectionModel.findOne({
+            nombre: {
+                "$regex": args.find.nombre, "$options": "i"
+            }
+        }).exec();
         if (producto)
             return producto;
     }
@@ -99,7 +103,6 @@ const productosResolver = (parent, args, context, info) => __awaiter(void 0, voi
 exports.productosResolver = productosResolver;
 const addProductoResolver = (root, args, context) => __awaiter(void 0, void 0, void 0, function* () {
     const db = database_1.Database.Instance();
-    console.log(args);
     const producto = yield db.ProductDBController.CollectionModel.exists({ ean: args.producto.ean });
     if (producto !== null) {
         return { message: "El código EAN está en uso", successful: false };

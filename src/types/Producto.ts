@@ -1,4 +1,4 @@
-import { Document } from 'mongoose';
+import { Document, Schema } from 'mongoose';
 
 export interface IProduct extends Document {
     nombre: string
@@ -43,15 +43,16 @@ export interface IReturnProduct extends Document {
     ean: string
 }
 
-export interface ILostProduct extends Document {
-    nombre: string
-    proveedor: string
-    familia: string
-    precioVenta: number
-    precioCompra: number
-    precioFinal: number
-    iva: number
-    margen: number
-    ean: string
-    cantidadMerma: number
+export interface IProductoMermado extends Document {
+    _id: Schema.Types.ObjectId,
+    nombre: string,
+    proveedor: string,
+    cantidad: number,
+    familia: string,
+    margen: number,
+    ean: string,
+    iva: number,
+    precioCompra: number,
+    precioVenta: number,
+    motivo: string,
 }

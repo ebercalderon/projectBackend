@@ -1,6 +1,6 @@
 import { UserInputError } from "apollo-server-express";
 import { Database } from "../../../databases/database"
-import { Credentials } from "../../../types/types";
+import { Credentials, JWTPayload } from "../../../types/types";
 import bcrypt from 'bcryptjs';
 import jwt from "jsonwebtoken";
 
@@ -26,12 +26,12 @@ export const loginResolver = async (parent: any, args: Credentials, context: any
 
             //Login JWT payload
             let payload;
-            if (tpv) { payload = { _id: empleado._id, nombre: empleado.nombre, apellidos: empleado.apellidos, email: empleado.email, rol: empleado.rol, TPV: tpv._id }; }
-            else { payload = { _id: empleado._id, nombre: empleado.nombre, apellidos: empleado.apellidos, email: empleado.email, rol: empleado.rol }; }
+            if (tpv) { payload = { _id: empleado._id, nombre: empleado.nombre, apellidos: empleado.apellidos, email: empleado.email, rol: empleado.rol, TPV: tpv._id } as JWTPayload; }
+            else { payload = { _id: empleado._id, nombre: empleado.nombre, apellidos: empleado.apellidos, email: empleado.email, rol: empleado.rol } as JWTPayload; }
             const jwtHoursDuration = process.env.JWT_HOURS_DURATION || 1;
 
             // Create Token Expires in 1 hour
-            const token = await jwt.sign(payload, secret, {
+            const token = jwt.sign(payload, secret, {
                 expiresIn: 3600 * Number(jwtHoursDuration)
             });
 

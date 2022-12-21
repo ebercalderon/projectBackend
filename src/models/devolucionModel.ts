@@ -37,9 +37,7 @@ export class Devolucion {
             dni: { type: String, requiered: true },
             email: { type: String, requiered: true },
             fechaAlta: { type: Date, required: false },
-            genero: { type: String, requiered: false },
             hashPassword: { type: String, requiered: false },
-            horasPorSemana: { type: Number, requiered: false },
             rol: { type: String, requiered: true },
         }, { strict: true, timestamps: false }) as Schema<IEmployee>;
 

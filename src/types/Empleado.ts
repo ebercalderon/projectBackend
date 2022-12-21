@@ -5,10 +5,8 @@ export interface IEmployee extends Document {
     apellidos: string,
     dni: string,
     rol: string,
-    genero?: string,
     email: string,
     hashPassword: string,
-    horasPorSemana?: number,
     fechaAlta?: Date,
 }
 

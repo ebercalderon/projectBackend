@@ -225,7 +225,9 @@ export const addVentaResolver = async (root: any, args: any, context: any) => {
         let isUpdatingCorrectly = true;
         // Actualizar la cantidad de productos
         args.fields.productos.forEach(async (p: ISoldProduct) => {
-            const err = await db.ProductDBController.CollectionModel.findOneAndUpdate({ _id: p._id }, { "$inc": { "cantidad": -p.cantidadVendida } });
+            const err = await db.ProductDBController.CollectionModel.findOneAndUpdate({ _id: p._id },
+                { "$inc": { "cantidad": -p.cantidadVendida } },
+                { timestamps: false });
             if (err?.errors && isUpdatingCorrectly) {
                 isUpdatingCorrectly = false;
             }
@@ -301,20 +303,22 @@ const FixVentaConsistency = async (venta: any): Promise<ISale> => {
     const nFactura = `${currentYear}/${numVentas + 1}`
 
     try {
-        const [productosVendidosFixed, precioVentaTotal, precioVentaTotalSinDto] = FixProductInconsistency(venta.productos)
+        const [productosVendidosFixed, precioVentaTotalProductos, precioVentaTotalSinDtoProductos] = FixProductsInconsistency(venta.productos)
 
         if (productosVendidosFixed.length <= 0 || venta.productos.length != productosVendidosFixed.length) {
             return CreateUncheckedSale(venta, nFactura)
         }
 
+        let precioVentaTotal = (precioVentaTotalProductos - venta.descuentoEfectivo) * (1 - (venta.descuentoPorcentaje / 100))
         const cambio = (venta.dineroEntregadoEfectivo + venta.dineroEntregadoTarjeta) - precioVentaTotal;
+
         const ventaFixed = {
             productos: productosVendidosFixed,
             numFactura: nFactura,
             dineroEntregadoEfectivo: venta.dineroEntregadoEfectivo,
             dineroEntregadoTarjeta: venta.dineroEntregadoTarjeta,
-            precioVentaTotalSinDto: precioVentaTotalSinDto,
-            precioVentaTotal: precioVentaTotal,
+            precioVentaTotalSinDto: precioVentaTotalSinDtoProductos,
+            precioVentaTotal: Math.round(precioVentaTotal * 100) / 100,
             cambio: cambio > 0 ? Number(cambio.toFixed(2)) : 0,
             cliente: venta.cliente,
             vendidoPor: venta.vendidoPor,
@@ -332,7 +336,7 @@ const FixVentaConsistency = async (venta: any): Promise<ISale> => {
     }
 }
 
-const FixProductInconsistency = (productos: ISoldProduct[]): [ISoldProduct[], number, number] => {
+const FixProductsInconsistency = (productos: ISoldProduct[]): [ISoldProduct[], number, number] => {
     try {
         let productosFixed: ISoldProduct[] = []
         let precioVentaTotal = 0
